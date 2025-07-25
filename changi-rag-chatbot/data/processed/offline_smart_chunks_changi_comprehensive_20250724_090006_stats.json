@@ -1,0 +1,27 @@
+{
+  "total_chunks": 19,
+  "unique_sources": 11,
+  "documents_processed": 11,
+  "total_documents": 11,
+  "success_rate": 1.0,
+  "chunking_method": "offline_semantic_heuristics",
+  "chunk_size_stats": {
+    "min_size": 306,
+    "max_size": 834,
+    "avg_size": 662.6315789473684,
+    "target_size": 800
+  },
+  "semantic_type_distribution": {
+    "promotions": 2,
+    "attractions": 9,
+    "services": 2,
+    "transportation": 2,
+    "shopping": 3,
+    "nature": 1
+  },
+  "content_stats": {
+    "total_characters": 12590,
+    "avg_chunks_per_source": 1.7272727272727273,
+    "topics_identified": 8
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "total_embeddings": 19,
+  "embedding_dimension": 768,
+  "embedding_model": "sentence-transformers/all-mpnet-base-v2",
+  "generation_timestamp": "2025-07-24 10:30:59",
+  "processing_device": "cpu",
+  "embedding_stats": {
+    "mean_norm": 0.9999999966923486,
+    "std_norm": 4.0576285504138645e-08,
+    "min_value": -0.15484410524368286,
+    "max_value": 0.15533702075481415,
+    "mean_value": -0.00042933500741785044,
+    "std_value": 0.03608183748329713
+  },
+  "content_stats": {
+    "total_words": 2318,
+    "avg_content_length": 763.8947368421053,
+    "unique_urls": 11,
+    "unique_titles": 8
+  }
+}

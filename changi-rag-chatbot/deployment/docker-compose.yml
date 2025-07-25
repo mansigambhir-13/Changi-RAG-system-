@@ -1,0 +1,265 @@
+version: '3.8'
+
+# Changi Airport RAG Chatbot - Hipster Assessment Deployment
+# This demonstrates production-ready containerized deployment with monitoring
+
+services:
+  # Main RAG Chatbot API
+  changi-chatbot-api:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.production
+    container_name: hipster-changi-chatbot
+    restart: unless-stopped
+    environment:
+      # API Configuration
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - WORKERS=2
+      
+      # LLM Configuration (Gemini)
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GEMINI_MODEL=gemini-1.5-flash
+      - GEMINI_TEMPERATURE=0.1
+      - GEMINI_MAX_TOKENS=1000
+      
+      # Vector Database (Pinecone)
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT:-gcp-starter}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME:-changi-hipster-assessment}
+      
+      # Performance & Caching
+      - REDIS_URL=redis://redis:6379
+      - CACHE_TTL=3600
+      
+      # Security & Rate Limiting
+      - SECRET_KEY=${SECRET_KEY:-hipster-assessment-secret-key-2024}
+      - RATE_LIMIT_REQUESTS=1000
+      - RATE_LIMIT_WINDOW=3600
+      
+      # Logging & Monitoring
+      - LOG_LEVEL=INFO
+      - LOG_FORMAT=json
+      - ENABLE_METRICS=true
+      
+      # Assessment Metadata
+      - DEPLOYMENT_ENV=hipster-assessment
+      - VERSION=1.0.0
+      - CANDIDATE_NAME=${CANDIDATE_NAME:-Assessment-Candidate}
+      
+    ports:
+      - "${API_PORT:-8000}:8000"
+      - "${METRICS_PORT:-8001}:8001"
+    
+    volumes:
+      - ../../data:/app/data
+      - ../../logs:/app/logs
+      - assessment_cache:/app/cache
+    
+    depends_on:
+      - redis
+      - nginx
+    
+    networks:
+      - hipster-assessment-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    labels:
+      - "hipster.assessment=changi-chatbot"
+      - "hipster.component=api"
+      - "hipster.version=1.0.0"
+
+  # Redis Cache & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: hipster-changi-redis
+    restart: unless-stopped
+    command: |
+      redis-server 
+      --appendonly yes 
+      --maxmemory 512mb 
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 300
+    volumes:
+      - redis_data:/data
+      - ./configs/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - hipster-assessment-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    labels:
+      - "hipster.assessment=changi-chatbot"
+      - "hipster.component=cache"
+
+  # Nginx Load Balancer & Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: hipster-changi-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./configs/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./configs/nginx-mime.types:/etc/nginx/mime.types:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - changi-chatbot-api
+    networks:
+      - hipster-assessment-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "hipster.assessment=changi-chatbot"
+      - "hipster.component=proxy"
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hipster-changi-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=7d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/rules.yml:/etc/prometheus/rules.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    networks:
+      - hipster-assessment-network
+    labels:
+      - "hipster.assessment=changi-chatbot"
+      - "hipster.component=monitoring"
+
+  # Grafana Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hipster-changi-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-hipster2024}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=localhost
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - hipster-assessment-network
+    labels:
+      - "hipster.assessment=changi-chatbot"
+      - "hipster.component=dashboard"
+
+  # Log Aggregation (Optional)
+  loki:
+    image: grafana/loki:latest
+    container_name: hipster-changi-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    networks:
+      - hipster-assessment-network
+    profiles:
+      - logging
+    labels:
+      - "hipster.assessment=changi-chatbot"
+      - "hipster.component=logging"
+
+  # Assessment Demo Interface
+  demo-interface:
+    build:
+      context: ../../
+      dockerfile: deployment/hipster-assessment/Dockerfile.demo
+    container_name: hipster-changi-demo
+    restart: unless-stopped
+    environment:
+      - API_BASE_URL=http://changi-chatbot-api:8000
+      - DEMO_TITLE=Changi Airport RAG Chatbot - Hipster Assessment
+    ports:
+      - "${DEMO_PORT:-8080}:8080"
+    depends_on:
+      - changi-chatbot-api
+    networks:
+      - hipster-assessment-network
+    labels:
+      - "hipster.assessment=changi-chatbot"
+      - "hipster.component=demo"
+
+# Volumes for persistent data
+volumes:
+  redis_data:
+    driver: local
+    labels:
+      hipster.assessment: "changi-chatbot"
+  
+  prometheus_data:
+    driver: local
+    labels:
+      hipster.assessment: "changi-chatbot"
+  
+  grafana_data:
+    driver: local
+    labels:
+      hipster.assessment: "changi-chatbot"
+  
+  loki_data:
+    driver: local
+    labels:
+      hipster.assessment: "changi-chatbot"
+  
+  nginx_logs:
+    driver: local
+    labels:
+      hipster.assessment: "changi-chatbot"
+  
+  assessment_cache:
+    driver: local
+    labels:
+      hipster.assessment: "changi-chatbot"
+
+# Networks
+networks:
+  hipster-assessment-network:
+    driver: bridge
+    name: hipster-changi-network
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+    labels:
+      hipster.assessment: "changi-chatbot"
+
+# Health check configuration
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s

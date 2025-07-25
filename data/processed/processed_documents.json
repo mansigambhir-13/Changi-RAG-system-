@@ -1,0 +1,66 @@
+[
+  {
+    "chunk_id": "changi_001",
+    "content": "Changi Airport operates 24 hours a day, 7 days a week. The airport provides world-class facilities and services to passengers traveling through Singapore.",
+    "title": "Changi Airport Operating Hours",
+    "url": "https://www.changiairport.com/corporate/about-us/airport-operations",
+    "chunk_index": 0,
+    "content_hash": "abc123"
+  },
+  {
+    "chunk_id": "jewel_001",
+    "content": "Jewel Changi Airport features the Rain Vortex, the world's tallest indoor waterfall at 40 meters high. The attraction also houses numerous dining and shopping options across multiple levels.",
+    "title": "Jewel Changi Airport - Rain Vortex",
+    "url": "https://www.jewelchangiairport.com/attractions/rain-vortex",
+    "chunk_index": 1,
+    "content_hash": "def456"
+  },
+  {
+    "chunk_id": "wifi_001",
+    "content": "Free WiFi is available throughout Changi Airport terminals. Passengers can connect to the 'Changi Airport WiFi' network for complimentary high-speed internet access without time limits.",
+    "title": "Changi Airport WiFi Services",
+    "url": "https://www.changiairport.com/passenger-guide/facilities-and-services/wifi",
+    "chunk_index": 2,
+    "content_hash": "ghi789"
+  },
+  {
+    "chunk_id": "dining_001",
+    "content": "Terminal 1 offers over 60 dining options including food courts, cafes, and restaurants. Popular choices include local Singapore cuisine like chicken rice and laksa, as well as international brands.",
+    "title": "Terminal 1 Dining Options",
+    "url": "https://www.changiairport.com/terminal1/dining",
+    "chunk_index": 3,
+    "content_hash": "jkl012"
+  },
+  {
+    "chunk_id": "shopping_001",
+    "content": "Shopping at Changi Airport includes duty-free stores, luxury brands, and local souvenirs. The airport features over 400 retail and service outlets across all terminals, making it a premier shopping destination.",
+    "title": "Changi Airport Shopping",
+    "url": "https://www.changiairport.com/shopping",
+    "chunk_index": 4,
+    "content_hash": "mno345"
+  },
+  {
+    "chunk_id": "transport_001",
+    "content": "Changi Airport is accessible by MRT, bus, taxi, and private car. The Changi Airport MRT station connects directly to the city center, with journey times of approximately 45 minutes to downtown Singapore.",
+    "title": "Transportation to Changi Airport",
+    "url": "https://www.changiairport.com/getting-here/by-train",
+    "chunk_index": 5,
+    "content_hash": "pqr678"
+  },
+  {
+    "chunk_id": "terminal2_001",
+    "content": "Terminal 2 at Changi Airport features the Orchid Garden, Entertainment Deck, and numerous shopping and dining options. The terminal serves as a hub for several international airlines.",
+    "title": "Terminal 2 Facilities",
+    "url": "https://www.changiairport.com/terminal2",
+    "chunk_index": 6,
+    "content_hash": "stu901"
+  },
+  {
+    "chunk_id": "lounge_001",
+    "content": "Changi Airport offers premium lounges across all terminals, including the award-winning Singapore Airlines SilverKris Lounge. Many lounges feature shower facilities, dining areas, and relaxation zones.",
+    "title": "Airport Lounges",
+    "url": "https://www.changiairport.com/passenger-guide/facilities-and-services/lounges",
+    "chunk_index": 7,
+    "content_hash": "vwx234"
+  }
+]

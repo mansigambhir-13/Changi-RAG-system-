@@ -1,0 +1,45 @@
+﻿version: '3.8'
+
+services:
+  changi-chatbot:
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile.production
+      target: production
+    container_name: hipster-changi-chatbot
+    restart: unless-stopped
+    environment:
+      - GOOGLE_API_KEY=
+      - PINECONE_API_KEY=
+      - PINECONE_ENVIRONMENT=gcp-starter
+      - PINECONE_INDEX_NAME=changi-hipster
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=INFO
+      - SECRET_KEY=hipster-assessment-key-2024
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../../data:/app/data
+      - ../../logs:/app/logs
+    depends_on:
+      - redis
+    networks:
+      - hipster-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: hipster-redis
+    restart: unless-stopped
+    networks:
+      - hipster-network
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+
+networks:
+  hipster-network:
+    driver: bridge

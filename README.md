@@ -511,3 +511,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for Changi Airport visitors and AI enthusiasts**
 
+For more information, visit our [documentation](docs/) or check out the [live demo](https://demo.changi-chatbot.com).
